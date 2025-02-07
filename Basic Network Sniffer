@@ -1,0 +1,65 @@
+from scapy.all import sniff
+import logging
+
+# Configure logging to provide more detailed output
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+def packet_callback(packet):
+    """
+    This function is called whenever a network packet is captured.
+    It prints a summary of the packet and extracts important details.
+    """
+    try:
+        # Print a brief summary of the packet
+        logging.info(f"Packet Captured: {packet.summary()}")
+
+        # Check if the packet contains an IP layer
+        if packet.haslayer("IP"):
+            source_ip = packet['IP'].src
+            destination_ip = packet['IP'].dst
+            logging.info(f"Source IP: {source_ip}, Destination IP: {destination_ip}")
+
+        # Check if the packet contains a TCP layer
+        if packet.haslayer("TCP"):
+            source_port = packet['TCP'].sport
+            destination_port = packet['TCP'].dport
+            logging.info(f"TCP Packet - Source Port: {source_port}, Destination Port: {destination_port}")
+
+        # Check if the packet contains a UDP layer
+        if packet.haslayer("UDP"):
+            source_port = packet['UDP'].sport
+            destination_port = packet['UDP'].dport
+            logging.info(f"UDP Packet - Source Port: {source_port}, Destination Port: {destination_port}")
+
+        # Print a separator for better readability
+        logging.info("-" * 50)
+
+    except Exception as e:
+        # Handle any unexpected errors during packet processing
+        logging.error(f"An error occurred while processing the packet: {e}")
+
+def start_sniffing(interface="Wi-Fi"):
+    """
+    Starts the packet sniffing process on the specified network interface.
+    """
+    try:
+        logging.info("Starting network sniffing... Press CTRL+C to stop.")
+        sniff(prn=packet_callback, store=False, iface=interface)
+    except KeyboardInterrupt:
+        logging.info("Sniffing stopped by the user.")
+    except Exception as e:
+        logging.error(f"An error occurred during sniffing: {e}")
+
+def main():
+    """
+    Main function to initialize and run the packet sniffing process.
+    """
+    try:
+        # Start sniffing on the specified interface
+        start_sniffing(interface="Wi-Fi")
+    except Exception as e:
+        logging.error(f"An error occurred in the main function: {e}")
+
+if __name__ == "__main__":
+    # Entry point of the script
+    main()
